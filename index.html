@@ -93,6 +93,13 @@
     #confetti { position:fixed; inset:0; z-index:40; pointer-events:none; overflow:hidden; }.confetti-piece { position:absolute; top:-20px; width:10px; height:16px; animation:confettiFall 3.5s linear forwards; }.confetti-piece:nth-child(3n){border-radius:50%}.confetti-piece:nth-child(4n){transform:rotate(30deg)}
     @keyframes confettiFall { to{transform:translateY(110vh) rotate(720deg);opacity:0} }
     .toast { position:fixed; left:50%; bottom:25px; z-index:60; transform:translate(-50%,20px); opacity:0; background:#40172b; color:#fff; border-radius:99px; padding:12px 18px; transition:.3s; pointer-events:none; font-size:.9rem; }.toast.show{opacity:1;transform:translate(-50%,0)}
+    .midnight-overlay { position:fixed; inset:0; z-index:70; display:none; place-items:center; padding:20px; text-align:center; background:radial-gradient(circle at 50% 35%,#fff1f6 0 12%,#ed245fcc 100%); backdrop-filter:blur(10px); }
+    .midnight-overlay.show { display:grid; animation:overlayIn .7s both; }
+    .midnight-card { width:min(620px,100%); padding:42px 26px; border-radius:36px; background:#fffffff2; border:1px solid #fff; box-shadow:0 25px 90px #6b163d55; }
+    .midnight-card .celebrate-emoji { display:block; font-size:5rem; animation:celebratePop 1.2s ease-in-out infinite; }
+    .midnight-card h2 { color:var(--rose); font-size:clamp(2.4rem,8vw,5.2rem); margin:14px 0; }
+    .midnight-card p { color:var(--muted); line-height:1.7; max-width:470px; margin:0 auto 24px; }
+    @keyframes overlayIn { from{opacity:0} to{opacity:1} } @keyframes celebratePop { 50%{transform:scale(1.12) rotate(4deg)} }
     .reasons-section { background:#fff; }
     .reasons-wrap { max-width:1120px; width:100%; }
     .reasons-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:28px; }
@@ -117,6 +124,7 @@
 </head>
 <body class="locked">
   <div class="noise"></div><div class="floating-hearts" id="hearts"></div><div id="confetti"></div><div class="toast" id="toast"></div>
+  <div class="midnight-overlay" id="midnightOverlay"><div class="midnight-card"><span class="celebrate-emoji">🎂✨</span><p class="eyebrow">The clock struck twelve</p><h2>Happy Birthday, Lilly!</h2><p>Chirag ki sabse pehli wish tumhare liye—may your day be as beautiful, warm and magical as your smile.</p><button class="btn btn-primary" onclick="openMidnightSurprise()">Open your birthday surprise ♥</button></div></div>
   <nav class="nav"><div class="brand">C + L <span>♥</span></div><button class="music-btn" id="musicBtn" type="button">♫ Play love song</button></nav>
   <audio id="loveAudio" src="lilly-love-tune.wav" loop preload="auto"></audio>
   <main>
@@ -143,7 +151,10 @@
 
     function nextMidnight(){ const d=new Date(); const target=new Date(d); target.setHours(24,0,0,0); return target; }
     let target=nextMidnight();
-    function updateCountdown(){ let diff=Math.max(0,target-new Date()); const h=Math.floor(diff/36e5), m=Math.floor(diff/6e4)%60, s=Math.floor(diff/1000)%60, ms=Math.floor(diff/10)%100; $('#hours').textContent=String(h).padStart(2,'0'); $('#minutes').textContent=String(m).padStart(2,'0'); $('#seconds').textContent=String(s).padStart(2,'0'); $('#milli').textContent=String(ms).padStart(2,'0'); if(diff<=0)target=nextMidnight(); }
+    let midnightShown=false;
+    function updateCountdown(){ const diff=target-new Date(); const safeDiff=Math.max(0,diff); const h=Math.floor(safeDiff/36e5), m=Math.floor(safeDiff/6e4)%60, s=Math.floor(safeDiff/1000)%60, ms=Math.floor(safeDiff/10)%100; $('#hours').textContent=String(h).padStart(2,'0'); $('#minutes').textContent=String(m).padStart(2,'0'); $('#seconds').textContent=String(s).padStart(2,'0'); $('#milli').textContent=String(ms).padStart(2,'0'); if(diff<=0 && !midnightShown){ celebrateMidnight(); midnightShown=true; setTimeout(()=>{target=nextMidnight();midnightShown=false;},1200); } }
+    function celebrateMidnight(){ $('#midnightOverlay').classList.add('show'); $('#cake').classList.add('cut'); burst(180); for(let i=0;i<35;i++)setTimeout(makeHeart,i*45); try{ loveAudio.volume=.62; loveAudio.play(); playing=true; $('#musicBtn').classList.add('active'); $('#musicBtn').innerHTML='♫ Love song on <span class="sound-wave"><i></i><i></i><i></i></span>'; }catch(err){} }
+    function openMidnightSurprise(){ $('#midnightOverlay').classList.remove('show'); document.body.classList.remove('locked'); $('#countdown').scrollIntoView({behavior:'smooth'}); toast('Midnight surprise opened for Lilly ♥'); softChime('yes'); }
     updateCountdown(); setInterval(updateCountdown,50);
     $('#cake').addEventListener('click',()=>{ $('#cake').classList.add('cut'); toast('Wish made! Happy Birthday Lilly 🎂'); softChime('unlock'); burst(55); setTimeout(()=>$('#cake').classList.remove('cut'),2200); });
 
